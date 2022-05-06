@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import './ERC721.sol';
@@ -25,14 +25,41 @@ contract ERC721Enumerable is ERC721 {
       super._mint(to, tokenId);
       // 2 things! A. add tokens to the owner
       // B. all tokens to our totalsupply - to allTokens
-      _addTokensToTotalSupply(tokenId);
+      _addTokensToAllTokenEnumeration(tokenId);
+      _addTokensToOwnerEnumeration(to, tokenId);
     }
 
-    function _addTokensToTotalSupply(uint256 tokenId) private {
-
+    // add tokens to the _allTokens array and set the position of the tokens indexes
+    function _addTokensToAllTokenEnumeration(uint256 tokenId) private {
+      _allTokensIndex[tokenId] = _allTokens.length;
       _allTokens.push(tokenId);
     }
 
+    function _addTokensToOwnerEnumeration(address to, uint256 tokenId) private {
+      // EXERCISE - CHALLENGE - DO THESE THREE THINGS:
+      // 1. add address and token id to the _ownedTokens
+      _ownedTokens[to].push(tokenId);
+      // 2. ownedTokensIndex tokenId set to the address of the ownedTokens position
+      _ownedTokensIndex[tokenId] = _ownedTokens[to].length;
+      // 3. we want to execute the function with minting
+      _addTokensToAllTokenEnumeration(tokenId);
+    }
+
+    // two functions - one that returns tokenByIndex
+    // another one that returns tokenOfOwnerByIndex
+
+    function tokenByIndex() public view returns(uint256 index) {
+      // make sure that the index is not out of bounds
+      require(index < totalSupply(), 'global index is out of bounds!');
+      return _allTokens[index];
+    }
+
+    function tokenOfOwnerByIndex(address owner, uint index) public view returns(uint256) {
+      require(index < balanceOf(owner), 'global index is out of bounds!');
+      return _ownedTokens[owner][index];
+    }
+
+    // return the total supply of the _allTokens array
     function totalSupply() public view returns(uint256) {
       return _allTokens.length;
     }
